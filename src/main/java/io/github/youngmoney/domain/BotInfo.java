@@ -15,7 +15,7 @@ public class BotInfo {
     //Methoden
     @Override
     public String toString() {
-        return String.format("%s (%s)\n %s", name, isActive ? "aktiv." : "nicht aktiv.", description);
+        return String.format("%s (%s)   - %s", name, isActive ? "aktiv." : "nicht aktiv.", description);
     }
 
 }

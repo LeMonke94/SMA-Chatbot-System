@@ -3,6 +3,7 @@ package io.github.youngmoney;
 import io.github.youngmoney.application.BotManager;
 import io.github.youngmoney.application.ChatSystem;
 import io.github.youngmoney.application.UserManager;
+import io.github.youngmoney.infrastructure.persistence.PersistenceManager;
 import io.github.youngmoney.bots.IBot;
 import io.github.youngmoney.bots.WetterBot;
 import io.github.youngmoney.infrastructure.adapter.WeatherApiClient;
@@ -11,9 +12,11 @@ import java.util.List;
 
 public class App {
     public static void main(String[] args) {
+        PersistenceManager persistenceManager = new PersistenceManager();
+        persistenceManager.initDB();
         UserManager userManager = new UserManager();
         BotManager botManager = new BotManager();
-        ChatSystem chatSystem = new ChatSystem(userManager, botManager);
+        ChatSystem chatSystem = new ChatSystem(userManager, botManager, persistenceManager);
 
         //Bots erstellen, in die <IBot> Liste befüllen, und in botManager laden
         //Wetterbot

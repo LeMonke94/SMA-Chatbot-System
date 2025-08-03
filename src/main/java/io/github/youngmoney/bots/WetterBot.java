@@ -24,7 +24,7 @@ public class WetterBot implements IBot{
     @Override
     public String processMessage(String input) {
         if (input == null || input.isBlank()) {
-            return "Bitte gib einen Input ein. Beispielinput: wie ist das Wetter in Bielefeld?";
+            return "Bitte gib einen Input ein.\nBeispielinput: wie ist das Wetter in Bielefeld?\n";
         }
         String[] words = input.split(" ");
         String city = words[words.length - 1].replace("?", "");

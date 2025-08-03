@@ -15,12 +15,12 @@ public class Console {
 
     //Methoden
     public void startConsole() {
-        print("Willkommen im System.");
+        print("Hallo lieber Benutzer.");
         boolean loggedIn = handleLogin();
         if (loggedIn) {
             runChatLoop();
         }
-        print("Bis Später.");
+        print("\nProgramm wird beendet.");
         scanner.close();
     }
 
@@ -54,7 +54,7 @@ public class Console {
             if ("exit".equalsIgnoreCase(response)) {
                 break;
             }
-            print("\nSystem: " + response);
+            print("\nSystem:\n" + response);
         }
     }
 
