@@ -15,33 +15,32 @@ public class Console {
 
     //Methoden
     public void startConsole() {
-        print("Hallo lieber Benutzer.");
+        print("System: Hallo lieber Benutzer.");
         boolean loggedIn = handleLogin();
         if (loggedIn) {
             runChatLoop();
         }
-        print("\nProgramm wird beendet.");
+        print("System: Programm wird beendet.");
         scanner.close();
     }
 
     private boolean handleLogin() {
         while (true) {
-            print("Bitte den Benutzernamen eingeben (oder 'exit' zum Beenden):");
+            print("System: Bitte den Benutzernamen eingeben (oder 'exit' um das Programm zu beenden):");
             print("> ");
             String username = scanner.nextLine();
             if ("exit".equalsIgnoreCase(username)) {
                 return false;
             }
-            print("Jetzt bitte das Passwort eingeben:");
+            print("System: Bitte das Passwort eingeben:");
             print("> ");
             String password = scanner.nextLine();
-
             String message = chatSystem.loginAttempt(username, password);
             if (message != null) {
                 print(message);
                 return true;
             } else {
-                print("Fehler: Benutzername oder Passwort falsch.");
+                print("Error: Benutzername oder Passwort falsch, versuche es nochmal.\n");
             }
         }
     }
@@ -63,3 +62,4 @@ public class Console {
     }
 
 }
+

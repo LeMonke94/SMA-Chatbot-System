@@ -49,7 +49,7 @@ public class BotManager {
                 return Optional.of(bot.processMessage(command));
             }
         }
-        return Optional.of("Bot '" + botNameInput + "' ist zurzeit nicht aktiv, oder konnte nicht gefunden werden.\n");
+        return Optional.of("Bot '" + botNameInput + "' ist noch nicht aktiviert, oder konnte nicht gefunden werden.\n");
     }
 
     private Optional<IBot> findAviableBot(String nameInput) {

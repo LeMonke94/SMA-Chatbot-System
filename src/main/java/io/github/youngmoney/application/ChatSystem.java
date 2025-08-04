@@ -32,7 +32,7 @@ public class ChatSystem {
             welcome.append("------------------ Letzte Nachrichten ------------------\n");
             List<ChatMessage> history = persistenceManager.loadHistory(currentUser);
             if (history.isEmpty()) {
-                welcome.append("Keinen Verlauf gefunden.\n");
+                welcome.append("Keinen Verlauf gefunden.");
             } else {
                 history.forEach(message -> welcome.append(message.toString()).append("\n"));
             }
@@ -65,7 +65,7 @@ public class ChatSystem {
         } else if (messageInput.toLowerCase().startsWith("deactivate bot ")) {
             String botName = messageInput.substring(15);
             botManager.deactivateBot(botName);
-            systemResponse = "Bot '" + botName + "' deaktiviert.\n";
+            systemResponse = "Bot '" + botName + "' deaktiviert\n";
         } else {
             Optional<String> botResponse = botManager.assignToBot(messageInput);
             systemResponse = botResponse.orElse("Echo: " + messageInput + "\n");
@@ -89,3 +89,4 @@ public class ChatSystem {
     }
     
 }
+

@@ -25,7 +25,7 @@ public class PersistenceManager {
         Statement statement = c.createStatement()) {
             statement.execute(sql);
         } catch (SQLException e) {
-            System.err.println("Fehler bei der Initialisierung der Datenbank: " + e.getMessage());
+            System.err.println("Error: Fehler bei der Initialisierung der Datenbank: " + e.getMessage() + "\n");
         }
     }
 
@@ -39,7 +39,7 @@ public class PersistenceManager {
             preparedStatement.setString(4, messageInput.getTimestamp().toString());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            System.err.println("Fehler beim Speichern der Nachricht: " + e.getMessage());
+            System.err.println("Error: Fehler beim Speichern der Nachricht: " + e.getMessage());
         }
     }
 
@@ -51,13 +51,10 @@ public class PersistenceManager {
                 LIMIT 100
                 """;
         List<ChatMessage> history = new ArrayList<>();
-
         try (Connection c = DriverManager.getConnection(DB_URL);
-            PreparedStatement pstmt = c.prepareStatement(sql)) {
-
+        PreparedStatement pstmt = c.prepareStatement(sql)) {
             pstmt.setString(1, user.getUsername());
             ResultSet rs = pstmt.executeQuery();
-
             while (rs.next()) {
                 ChatMessage message = new ChatMessage(
                     rs.getString("sender"),
@@ -67,7 +64,7 @@ public class PersistenceManager {
                 history.add(message);
             }
         } catch (SQLException e) {
-            System.err.println("Fehler beim Laden des Verlaufs: " + e.getMessage());
+            System.err.println("Error: Fehler beim Laden des Verlaufs: " + e.getMessage() + "\n");
         }
         Collections.reverse(history);
         return history;
