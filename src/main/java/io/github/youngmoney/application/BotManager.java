@@ -15,16 +15,25 @@ public class BotManager {
         availabeBots.addAll(botsInput);
     }
 
-    public void activateBot(String nameInput) {
-        findAviableBot(nameInput).ifPresent( bot -> {
-            if (!activeBots.contains(bot)) {
-                activeBots.add(bot);
-            }
-        });
+    public boolean activateBot(String nameInput) {
+        Optional<IBot> botOptional = findAviableBot(nameInput);
+        if (botOptional.isEmpty()) {
+            return false;
+        }
+        IBot bot = botOptional.get();
+        if (!activeBots.contains(bot)) {
+            activeBots.add(bot);
+        }
+        return true;
     }
 
-    public void deactivateBot(String nameInput) {
-        findAviableBot(nameInput).ifPresent(bot -> activeBots.remove(bot));
+    public boolean deactivateBot(String nameInput) {
+        Optional<IBot> botOptional = findAviableBot(nameInput);
+        if (botOptional.isEmpty()) {
+            return false;
+        }
+        activeBots.remove(botOptional.get());
+        return true;
     }
 
     public List<BotInfo> listBots() {

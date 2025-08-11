@@ -68,7 +68,7 @@ public class WeatherApiClient {
                     });
                 return sb.toString();
             } else {
-                return "Error: Vorhersage für die Stadt nicht gefunden.";
+                return "Error: Vorhersage für die Stadt nicht gefunden.\n";
             }
 
         } catch (IOException | InterruptedException e) {
@@ -76,12 +76,12 @@ public class WeatherApiClient {
         }
     }
 
-    //JSON Umwandlung
-    private static class WeatherResponse { String name; Weather[] weather; Main main; Wind wind; }
+    //JSON
+    public static class WeatherResponse { Weather[] weather; Main main; Wind wind; String name; }
     private static class Weather { String description; }
     private static class Main { double temp; }
     private static class Wind { double speed; }
-    
+
     private static class ForecastResponse { City city; java.util.List<ForecastItem> list; }
     private static class City { String name; }
     private static class ForecastItem { long dt; Main main; Weather[] weather; String dt_txt; }

@@ -48,7 +48,6 @@ public class ChatSystem {
 
     public String processInput(String messageInput) {
         persistenceManager.saveMessage(new ChatMessage(currentUser.getUsername(), currentUser.getUsername(), messageInput, LocalDateTime.now()));
-
         String systemResponse;
         if ("exit".equalsIgnoreCase(messageInput)) {
             return "exit";
@@ -60,12 +59,20 @@ public class ChatSystem {
             systemResponse = sb.toString();
         } else if (messageInput.toLowerCase().startsWith("activate bot ")) {
             String botName = messageInput.substring(13);
-            botManager.activateBot(botName);
-            systemResponse = "Bot '" + botName + "' aktiviert.\n";
+            boolean success = botManager.activateBot(botName);
+            if (success) {
+                systemResponse = "Bot '" + botName + "' aktiviert.\n";
+            } else {
+                systemResponse = "Error: Bot '" + botName + "' wurde nicht gefunden.\n";
+            }
         } else if (messageInput.toLowerCase().startsWith("deactivate bot ")) {
             String botName = messageInput.substring(15);
-            botManager.deactivateBot(botName);
-            systemResponse = "Bot '" + botName + "' deaktiviert\n";
+            boolean success = botManager.deactivateBot(botName);
+            if (success) {
+                systemResponse = "Bot '" + botName + "' deaktiviert\n";
+            } else {
+                systemResponse = "Error: Bot '" + botName + "' wurde nicht gefunden.\n";
+            }
         } else {
             Optional<String> botResponse = botManager.assignToBot(messageInput);
             systemResponse = botResponse.orElse("Echo: " + messageInput + "\n");
