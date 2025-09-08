@@ -1,16 +1,16 @@
 package io.github.youngmoney.infrastructure.adapter;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 
 public class WikipediaApiClient {
@@ -33,12 +33,18 @@ public class WikipediaApiClient {
                     limit
             );
 
-            HttpRequest req = HttpRequest.newBuilder(URI.create(url)).GET().build();
+            HttpRequest req = HttpRequest.newBuilder(URI.create(url))
+                .GET()
+                .header("User-Agent", "SMA-Chatbot-System/1.0 (kontakt: student@example.com)")
+                .header("Accept", "application/json")
+                .build();
+
             HttpResponse<String> res = http.send(req, HttpResponse.BodyHandlers.ofString());
 
+
             if (res.statusCode() != 200 || res.body() == null || res.body().isBlank()) {
-                return "Keine Daten von Wikipedia erhalten.";
-            }
+            return "Keine Daten von Wikipedia erhalten. (HTTP " + res.statusCode() + ")";
+}
 
             JsonObject root = gson.fromJson(res.body(), JsonObject.class);
             JsonArray pages = root.has("pages") && root.get("pages").isJsonArray()
@@ -68,7 +74,7 @@ public class WikipediaApiClient {
             }
             return sb.toString().trim();
         } catch (Exception e) {
-            return "Fehler beim Abrufen von Wikipedia: " + e.getMessage();
+            return "Error: Fehler beim Abrufen von Wikipedia: " + e.getMessage();
         }
     }
 

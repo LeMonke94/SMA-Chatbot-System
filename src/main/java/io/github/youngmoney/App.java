@@ -1,14 +1,17 @@
 package io.github.youngmoney;
 
+import java.util.List;
+
 import io.github.youngmoney.application.BotManager;
 import io.github.youngmoney.application.ChatSystem;
 import io.github.youngmoney.application.UserManager;
-import io.github.youngmoney.infrastructure.persistence.PersistenceManager;
 import io.github.youngmoney.bots.IBot;
 import io.github.youngmoney.bots.WetterBot;
+import io.github.youngmoney.bots.WikiBot;
 import io.github.youngmoney.infrastructure.adapter.WeatherApiClient;
+import io.github.youngmoney.infrastructure.adapter.WikipediaApiClient;
+import io.github.youngmoney.infrastructure.persistence.PersistenceManager;
 import io.github.youngmoney.ui.Console;
-import java.util.List;
 
 public class App {
     public static void main(String[] args) {
@@ -23,7 +26,11 @@ public class App {
         WeatherApiClient weatherAdapter = new WeatherApiClient();
         WetterBot wetterBot = new WetterBot(weatherAdapter);
 
-        List<IBot> allBots = List.of(wetterBot);
+        WikipediaApiClient wikipediaAdapter = new WikipediaApiClient();
+        WikiBot wikiBot = new WikiBot(wikipediaAdapter);
+
+
+        List<IBot> allBots = List.of(wetterBot, wikiBot);
         botManager.loadBots(allBots);
 
         //Console erstellen und aktivieren
