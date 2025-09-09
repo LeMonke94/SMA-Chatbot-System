@@ -10,21 +10,19 @@ import io.github.youngmoney.infrastructure.adapter.TranslatorApiClient;
 public class TranslatorBot implements IBot {
     private final TranslatorApiClient translatorAdapter;
 
-    // --- Eingabe-Parsing ---
-    // erkennt "ins deutsche", "nach EN", "to FR" ...
+    // --- Eingabe ---
     private static final Pattern TARGET_LANG_PATTERN =
         Pattern.compile("(?:ins|in die sprache|nach|to)\\s+([A-Za-zÄÖÜäöüß-]+)", Pattern.CASE_INSENSITIVE);
 
-    // zieht den Text hinter ":" (auch Fullwidth-„：“) heraus
     private static final Pattern AFTER_COLON_TEXT_PATTERN = Pattern.compile("[:：]\\s*(.+)$");
 
-    // Kurzsyntax: EN->DE: Text (Pfeile -, – , → , > sind erlaubt; Ziel kann z.B. PT-BR sein)
+    // Kurzsyntax: EN->DE
     private static final Pattern ARROW_SYNTAX_PATTERN = Pattern.compile(
         "\\b([A-Za-z]{2})\\s*(?:-\\s*>|–\\s*>|→)\\s*([A-Za-z]{2}(?:-[A-Za-z]{2})?)\\s*:\\s*(.+)",
         Pattern.CASE_INSENSITIVE
     );
 
-    // Mapping von Namen auf Codes (Fallback: Großschreibung des Inputs)
+    // Mapping von Namen auf Codes 
     private static final Map<String, String> NAME_TO_CODE = Map.of(
         "deutsch", "DE", "deutsche", "DE",
         "englisch", "EN", "französisch", "FR",
