@@ -942,8 +942,6 @@ Bausteinsicht:
 
 Laufzeitsicht:
 
-**Hinweis:** Der ÜbersetzerBot wird immer explizit über `@translatebot` angesprochen. Eingaben ohne diese Ansprache werden nicht vom Bot verarbeitet.
-
 Szenario: Standardübersetzung
 - Input: `@translatebot übersetze ins Deutsche: A bird in the hand is worth two in the bush.`
 - Parsing: Regex erkennt Ziel `DE` aus der Formulierung *„ins Deutsche“*.
