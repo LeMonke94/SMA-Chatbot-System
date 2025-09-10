@@ -159,8 +159,8 @@ public class TranslatorBot implements IBot {
              + "Beispiele:\n"
              + " - @translatebot übersetze ins Deutsche: A bird in the hand is worth two in the bush.\n"
              + " - @translatebot EN->DE: Hello World\n"
-             + " - EN>FR Bonjour\n"
-             + " - EN-DE: Good morning\n"
-             + " - nach ES: Guten Morgen\n";
+             + " - @translatebot EN>FR Bonjour\n"
+             + " - @translatebot EN-DE: Good morning\n"
+             + " - @translatebot nach ES: Guten Morgen\n";
     }
 }

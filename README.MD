@@ -942,27 +942,32 @@ Bausteinsicht:
 
 Laufzeitsicht:
 
+**Hinweis:** Der ÜbersetzerBot wird immer explizit über `@translatebot` angesprochen. Eingaben ohne diese Ansprache werden nicht vom Bot verarbeitet.
+
 Szenario: Standardübersetzung
-- Input: "@translatebot übersetze ins Deutsche: A bird in the hand is worth two in the bush."
-- Regex erkennt Ziel: DE
-- API-Call: POST /v2/translate mit target_lang=DE
-- JSON-Parsing mit GSON
-- Ausgabe: "Der Spatz in der Hand ist besser als die Taube auf dem Dach."
+- Input: `@translatebot übersetze ins Deutsche: A bird in the hand is worth two in the bush.`
+- Parsing: Regex erkennt Ziel `DE` aus der Formulierung *„ins Deutsche“*.
+- API-Call: `POST /v2/translate` mit `target_lang=DE`
+- Verarbeitung: JSON-Parsing mit GSON
+- Ausgabe: `Der Spatz in der Hand ist besser als die Taube auf dem Dach.`
 
 Szenario: Kurzsyntax
-- Input: "EN->FR: Good morning"
-- Parser erkennt EN als Quell- und FR als Zielsprache
-- API-Call mit source_lang=EN, target_lang=FR
-- Ausgabe: "Bonjour"
+- Input: `@translatebot EN->FR: Good morning`
+- Parsing: Kurzsyntax-Parser erkennt `source_lang=EN`, `target_lang=FR`, Text=`Good morning`
+- API-Call: `POST /v2/translate` mit `source_lang=EN`, `target_lang=FR`
+- Ausgabe: `Bonjour`
 
 Ansprechmöglichkeiten
 
-| Variante             | Eingabe (Beispiel)                                                               | Ausgabe (Beispiel)                               |
-|----------------------|----------------------------------------------------------------------------------|--------------------------------------------------|
-| Direkter Befehl      | `@translatebot übersetze ins Deutsche: A bird in the hand is worth two...`       | `Der Spatz in der Hand ist besser ...`           |
-| Dialogmodus          | `@translatebot` <br> `DE` <br> `A bird in the hand is worth two...`              | `Der Spatz in der Hand ist besser ...`           |
-| Freitext-Analyse     | `Übersetze ins Französische: Guten Morgen, wie geht es dir?`                     | `Bonjour, comment ça va ?`                       |
-| Kurzsyntax           | `EN->FR: Good morning` <br> `EN>FR Bonjour` <br> `EN-DE: Hello` <br> `EN→FR: Hi` | `Bonjour` / `Hallo` / `Salut` je nach Ziel       |
+| Eingabe (Beispiel)                                                                   | Ausgabe (Beispiel)                     |
+|--------------------------------------------------------------------------------------|----------------------------------------|
+| `@translatebot übersetze ins Deutsche: A bird in the hand is worth two in the bush.` | `Der Spatz in der Hand ist besser ...` |
+| `@translatebot` → `DE` → `A bird in the hand is worth two in the bush.`              | `Der Spatz in der Hand ist besser ...` |
+| `@translatebot Übersetze ins Französische: Guten Morgen, wie geht es dir?`           | `Bonjour, comment ça va ?`             |
+| `@translatebot EN->FR: Good morning`                                                 | `Bonjour`                              |
+
+Fehlermeldungen:
+Bei fehlerhafter Eingabe zeigt der Bot eine Hilfe mit Beispielen. 
 
 Schnittstellen:
    Eingabe-Pattern:
