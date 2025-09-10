@@ -50,9 +50,9 @@ Hauptfunktionen:
 
 Die Dokumentation gliedert sich in zwei Hauptteile:  
 
-- **Systemdokumentation**:  
+- Systemdokumentation:  
   Darstellung des Basissystems, seiner Komponenten und Architektur.  
-- **Bot-Dokumentation**:  
+- Bot-Dokumentation:  
   Eigene Kapitel für die drei implementierten Bots mit Aufbau, Schnittstellen und Laufzeitsicht.  
 
 ---
@@ -925,54 +925,69 @@ Kontextabgrenzung:
                       Übersetzter Text
 
 Lösungsstrategie:
-    - Pattern Matching: Regex für Erkennung von Zielsprachen ("nach EN", "ins Deutsche", "to FR")
-    - Kurzsyntax: EN->DE: Text zur direkten Quell- und Zielsprachenangabe
-    - Fehlerbehandlung: Rückmeldungen bei nicht erkannten Sprachen oder leeren Texten
-    - API-Integration: Adapter Pattern mit TranslatorApiClient (DeepL)
+   - Pattern Matching: Regex für Erkennung von Zielsprachen ("nach EN", "ins Deutsche", "to FR")
+   - Kurzsyntax: EN->DE / EN>DE / EN-DE / EN→DE : Text zur direkten Quell- und Zielsprachenangabe
+   - Fehlerbehandlung: Rückmeldungen bei nicht erkannten Sprachen oder leeren Texten
+   - API-Integration: Adapter Pattern mit TranslatorApiClient (DeepL)
 
 Bausteinsicht:
 ÜbersetzerBot
 ├── translatorAdapter: TranslatorApiClient  // Dependency Injection
 ├── targetLangPattern: Pattern              // Regex für Sprachangabe
-├── arrowSyntaxPattern: Pattern             // Kurzsyntax EN->DE
+├── arrowSyntaxPattern: Pattern             // Kurzsyntax EN->DE / EN>DE / EN-DE / EN→DE
 ├── afterColonPattern: Pattern              // Text nach ":" extrahieren
-├── getBotName(): "ÜbersetzerBot"
+├── getBotName(): "translatebot"
 ├── getBotDescription(): String
 └── processMessage(String): String          // Hauptlogik
 
 Laufzeitsicht:
 
 Szenario: Standardübersetzung
-    - Input: "@translatebot übersetze ins Deutsche: A bird in the hand is worth two in the bush."
-    - Regex erkennt Ziel: DE
-    - API-Call: POST /v2/translate mit target_lang=DE
-    - JSON-Parsing mit GSON
-    - Ausgabe: "Der Spatz in der Hand ist besser als die Taube auf dem Dach."
+- Input: "@translatebot übersetze ins Deutsche: A bird in the hand is worth two in the bush."
+- Regex erkennt Ziel: DE
+- API-Call: POST /v2/translate mit target_lang=DE
+- JSON-Parsing mit GSON
+- Ausgabe: "Der Spatz in der Hand ist besser als die Taube auf dem Dach."
 
 Szenario: Kurzsyntax
-    - Input: "EN->FR: Good morning"
-    - Parser erkennt EN als Quell- und FR als Zielsprache
-    - API-Call mit source_lang=EN, target_lang=FR
-    - Ausgabe: "Bonjour"
+- Input: "EN->FR: Good morning"
+- Parser erkennt EN als Quell- und FR als Zielsprache
+- API-Call mit source_lang=EN, target_lang=FR
+- Ausgabe: "Bonjour"
+
+Ansprechmöglichkeiten
+
+| Variante             | Eingabe (Beispiel)                                                               | Ausgabe (Beispiel)                               |
+|----------------------|----------------------------------------------------------------------------------|--------------------------------------------------|
+| Direkter Befehl      | `@translatebot übersetze ins Deutsche: A bird in the hand is worth two...`       | `Der Spatz in der Hand ist besser ...`           |
+| Dialogmodus          | `@translatebot` <br> `DE` <br> `A bird in the hand is worth two...`              | `Der Spatz in der Hand ist besser ...`           |
+| Freitext-Analyse     | `Übersetze ins Französische: Guten Morgen, wie geht es dir?`                     | `Bonjour, comment ça va ?`                       |
+| Kurzsyntax           | `EN->FR: Good morning` <br> `EN>FR Bonjour` <br> `EN-DE: Hello` <br> `EN→FR: Hi` | `Bonjour` / `Hallo` / `Salut` je nach Ziel       |
 
 Schnittstellen:
-    Eingabe-Pattern:
-        @translatebot übersetze ins {SPRACHE}: {TEXT}
-        @translatebot nach {SPRACHE}: {TEXT}
-        {SRC}-> {DEST}: {TEXT}
+   Eingabe-Pattern:
+      - @translatebot übersetze ins {SPRACHE}: {TEXT}
+      - @translatebot nach {SPRACHE}: {TEXT}
+      - {SRC}-> {DEST}: {TEXT}
+      - {SRC}> {DEST}: {TEXT}
+      - {SRC}-{DEST}: {TEXT}
+      - {SRC}→{DEST}: {TEXT}
 
-    Ausgabe-Format:
-    Übersetzung ({source_lang} → {target_lang}):
-    {translated_text}
-
+   Ausgabe-Format:
+      ```
+      Übersetzung ({source_lang} → {target_lang}):
+      {translated_text}
+      ```
+      
 API-Integration:
-    - Endpoint: https://api-free.deepl.com/v2/translate
-    - Method: POST
-    - Parameter:
-        - text={TEXT}
-        - target_lang={LANG} (optional: source_lang)
-    - Authentifizierung: API-Key im Header (Authorization: DeepL-Auth-Key ...)
-    - Antwort: JSON → { "translations":[{"detected_source_language":"EN","text":"..."}] }
-    - Limit: 500.000 Zeichen / Monat (Free Tier)
+- Endpoint: https://api-free.deepl.com/v2/translate
+- Method: POST
+- Parameter:
+  - text={TEXT}
+  - target_lang={LANG} (optional: source_lang)
+- Authentifizierung: API-Key im HTTP-Header  
+  `Authorization: DeepL-Auth-Key <API-KEY>`
+- Antwort: JSON → `{ "translations":[{"detected_source_language":"EN","text":"..."}] }`
+- Limit: 500.000 Zeichen / Monat (Free Tier)
 
 ---

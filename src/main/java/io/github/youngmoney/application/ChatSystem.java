@@ -83,17 +83,26 @@ public class ChatSystem {
 
     private String getHelpMessage() {
         StringBuilder sb = new StringBuilder("---------------------------------------------------------\n");
-        sb.append("Hier sind die verfügbaren Befehle::\n\n");
+        sb.append("Hier sind die verfügbaren Befehle:\n\n");
+
         sb.append("Systembefehle:\n");
         sb.append("  list bots               - Zeigt alle verfügbaren Bots an.\n");
         sb.append("  activate bot <name>     - Aktiviert einen Bot.\n");
         sb.append("  deactivate bot <name>   - Deaktiviert einen Bot.\n");
         sb.append("  exit                    - Beendet das Programm.\n\n");
-        sb.append("Bot-Befehle (Beispiel):\n");
+
+        sb.append("Bot-Befehle (Beispiele):\n");
         sb.append("  @wetterbot <stadt>      - Fragt das aktuelle Wetter für eine Stadt ab.\n");
+        sb.append("     z.B.: @wetterbot wie ist das Wetter in Bielefeld?\n");
+
+        sb.append("  @wiki <begriff>         - Gibt Kurzinfos zu einem Begriff zurück.\n");
+        sb.append("     z.B.: @wiki Was ist Bielefeld?\n");
+
+        sb.append("  @translatebot <text>    - Übersetzt einen Text in eine andere Sprache.\n");
+        sb.append("     z.B.: @translatebot übersetze ins Deutsche: A bird in the hand is worth two in the bush.\n");
+
         sb.append("---------------------------------------------------------\n");
         return sb.toString();
     }
     
 }
-
