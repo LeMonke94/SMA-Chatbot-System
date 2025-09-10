@@ -548,10 +548,11 @@ API-Spezifikation OpenWeatherMap
         - Response: JSON mit 5-Tage Vorhersage
 
 API-Spezifikation Wikipedia
-##############################################################################################################################
-HIER API SPEZIFIKATION FÜR DAVID
-##############################################################################################################################
-
+    Search Page:
+        - Endpoint: /w/rest.php/v1/search/page?q={term}&limit={n}
+        - Method:   GET
+        - Response: JSON mit title, description, excerpt
+  
 API-Spezifikation DeepL
     Translate:
         - Endpoint: /translate
@@ -842,9 +843,72 @@ API-Integration:
 ---
 
 ## 4.2 WikiBot
-##############################################################################################################################
-HIER BOT DOKU FÜR WIKIBOT
-##############################################################################################################################
+
+Kontextabgrenzung:
+
+┌──────────┐    Nachricht     ┌──────────┐      HTTP       ┌─────────────┐
+│ Benutzer │─────────────────►│ WikiBot  │────────────────►│ Wikipedia   │
+└──────────┘                  └──────────┘                 └─────────────┘
+     ▲                              │                          │
+     │                              │         JSON             │
+     └──────────────────────────────┴──────────────────────────┘
+                  Formatierte Kurzbeschreibung
+
+Lösungsstrategie:
+    - Pattern Matching: Regex-Erkennung von Fragen mit „Was ist …“, „Wer ist …“, oder einfache Schlagwortsuche
+    - Keyword-Erkennung: Fokus auf das Schlagwort nach @wiki
+    - Fehlerbehandlung: Meldungen bei „keine Ergebnisse“ oder falschen Eingaben
+    - API-Integration: Nutzung des Wikipedia REST-API Endpoints /search/page über einen WikiApiClient (Adapter Pattern)
+  
+Bausteinsicht:
+WikiBot
+├── wikiAdapter: WikiApiClient         // Dependency Injection
+├── queryPattern: Pattern              // Regex für Begriffe
+├── getBotName(): "WikiBot"
+├── getBotDescription(): String
+└── processMessage(String): String     // Hauptlogik
+
+Laufzeitsicht:
+
+Szenario: Begriff abfragen
+    - Input: "@wiki Was ist Bielefeld?"
+    - processMessage() wird aufgerufen
+    - Regex extrahiert Suchbegriff → "Bielefeld"
+    - API-Call: GET /w/rest.php/v1/search/page?q=Bielefeld&limit=3
+    - JSON-Parsing mit GSON → Liste von Treffern (Titel + Beschreibung)
+    - Ausgabe formatiert:
+      Folgende Information habe ich zu Bielefeld:
+       - Bielefeld: Großstadt in NRW, Deutschland
+       - Arminia Bielefeld: Sportverein aus Bielefeld
+       - Bielefeld-Verschwörung: populäre Satire über die Stadt Bielefeld
+
+Szenario: Kein Treffer
+    - Input: "@wiki Was ist Foobarstadt?"
+    - API-Response: leere Liste
+    - Ausgabe:
+      Kein Treffer für: {BEGRIFF}
+
+Schnittstellen:
+    Eingabe-Pattern:
+        @wiki Was ist {BEGRIFF}?
+        @wiki Wer ist {BEGRIFF}?
+        @wiki {BEGRIFF}
+
+    Ausgabe-Format:
+    Folgende Information habe ich zu {BEGRIFF}:
+      - {Titel1}: {Beschreibung1}
+      - {Titel2}: {Beschreibung2}
+      - ...
+
+API-Integration:
+    - Endpoint: https://de.wikipedia.org/w/rest.php/v1/search/page
+    - Method: GET
+    - Parameter:
+        - q={term} → Suchbegriff
+        - limit={n} → max. Trefferanzahl (Standard: 3)
+    - Response: JSON mit title, description, excerpt
+    - Authentifizierung: keine notwendig
+    - Rate Limit: abhängig von Wikipedia, aber großzügig (öffentlich nutzbar)
 
 ---
 
