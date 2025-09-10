@@ -240,14 +240,22 @@ Szenario 1: Benutzer-Login:
 |    │                   │                   │                    │──SELECT───────>│    |
 |    │                   │                   │                    │<──Result───────│    |
 |    │                   │<──List<ChatMessage>────────────────────│                │    |
-|    │<──Welcome+History │                   │                    │                │    |
-|    │                   │                   │                    │                │    |
+|    │<─Welcome + History│                   │                    │                │    |
+|    │    + HelpMessage──│                   │                    │                │    |
 |---------------------------------------------------------------------------------------|
 
-1. Benutzer startet das System  
-2. Login-Aufforderung → Eingabe Benutzername/Passwort  
-3. Prüfung durch UserManager  
-4. Begrüßung des Benutzers und Anzeige des Chatverlaufs
+Ablaufbeschreibung für den Benutzer-Login:
+1. System-Start: Benutzer startet die Anwendung über App.main(), Console wird initialisiert  
+2. Login-Prompt: Console zeigt "Bitte den Benutzernamen eingeben:" und wartet auf Eingabe 
+3. Logindaten-Eingabe: Benutzer gibt Username und Passwort ein (z.B. "User" / "Passwort") 
+4. Authentifizierung: ChatSystem ruft UserManager.login() auf, der die HashMap mit den Login-Daten prüft
+5. User-Objekt: Bei erfolgreicher Prüfung wird ein User-Objekt erstellt und zurückgegeben
+6. Verlauf laden: ChatSystem ruft PersistenceManager.loadHistory() mit dem eingeloggten User auf
+7. SQL-Abfrage: SELECT * FROM chat_history WHERE recipient = ? ORDER BY timestamp DESC LIMIT 100
+8. Verlauf aufbereiten: Die letzten 100 Nachrichten werden in chronologischer Reihenfolge sortiert
+9. Willkommensnachricht: StringBuilder erstellt Begrüßung mit Username und Chatverlauf
+10. Hilfe anzeigen: Automatische Anzeige der verfügbaren Befehle (list bots, activate bot, etc.)
+
 
 Szenario 2: list Bots, activate bot Wetterbot, deactivate bot Wetterbot:
 |--------------------------------------------------------------------|
@@ -280,11 +288,31 @@ Szenario 2: list Bots, activate bot Wetterbot, deactivate bot Wetterbot:
 |   │                 │                    │                  │      |
 |--------------------------------------------------------------------|
 
-##############################################################################################################################
-1. Benutzer schreibt "list bots"
-2. BotManager prüft ob Botname in aviableBots Liste ist
-HIER BESCHREIBUNG WEITERSCHREIBEN
-##############################################################################################################################
+Ablaufbeschreibung für "list bots":
+1. Befehlseingabe: Benutzer tippt "list bots" in die Console
+2. String-Matching: ChatSystem prüft mit equalsIgnoreCase() auf bekannte Befehle
+3. Bot-Abfrage: BotManager iteriert über availableBots Liste
+4. Status-Check: Für jeden Bot wird geprüft, ob er in activeBots Liste ist
+5. BotInfo-Erstellung: Neue BotInfo-Objekte mit Name, Beschreibung und Active-Status
+6. Formatierte Ausgabe: StringBuilder erstellt Liste mit "- Botname (aktiv/nicht aktiv) - Beschreibung"
+7. Anzeige: Console gibt die formatierte Liste aus
+
+Ablaufbeschreibung für "activate bot wetterbot":
+1. Befehlseingabe: Benutzer tippt "activate bot wetterbot"
+2. String-Parsing: ChatSystem extrahiert Botname mit substring(13)
+3. Bot-Suche: BotManager sucht in availableBots mit findAvailableBot()
+4. Verfügbarkeitsprüfung: Stream-Filter mit equalsIgnoreCase() auf Bot-Namen
+5. Aktivierung: Bot wird zu activeBots Liste hinzugefügt (wenn nicht schon drinnen)
+6. Rückgabe: Boolean true bei Erfolg, false wenn Bot nicht gefunden
+7. Bestätigung: "Bot 'wetterbot' aktiviert." oder Fehlermeldung "Error: Bot wetterbot wurde nicht gefunden" wird ausgegeben
+
+Ablaufbeschreibung für "deactivate bot wetterbot"
+1. Befehlseingabe: Benutzer tippt "deactivate bot wetterbot"
+2. String-Parsing: ChatSystem extrahiert Botname mit substring(15)
+3. Bot-Suche: BotManager sucht in availableBots mit findAvailableBot()
+4. Deaktivierung: Bot wird aus activeBots Liste entfernt mit remove()
+5. Bestätigung: "Bot 'wetterbot' deaktiviert." oder Fehlermeldung "Error: Bot wetterbot wurde nicht gefunden" wird ausgegeben
+
 
 Szenario 3: Bot-Anfrage (@wetterbot)
 |-------------------------------------------------------------------------------------------------------------------------|
@@ -309,9 +337,116 @@ Szenario 3: Bot-Anfrage (@wetterbot)
 |  │            │                 │                │                   │                      │                   │       |
 |-------------------------------------------------------------------------------------------------------------------------|
 
-##############################################################################################################################
-HIER DEN PROZESS BESCHREIBEN
-##############################################################################################################################
+Ablaufbeschreibung für eine Botanfrage am Beispiel des Wetterbots:
+1. Bot-Anfrage: Benutzer gibt "@wetterbot wie ist das Wetter in Berlin?" ein
+2. @-Erkennung: ChatSystem erkennt "@" am Anfang und ruft BotManager.assignToBot() auf
+3. Bot-Name extrahieren: String wird bei Leerzeichen gesplittet, "@wetterbot" → "wetterbot"
+4. Bot-Suche: BotManager iteriert über activeBots Liste
+5. Name-Matching: Vergleich mit getBotName().equalsIgnoreCase("wetterbot")
+6. Message-Weitergabe: Rest der Nachricht "wie ist das Wetter in Berlin?" an Bot
+7. Stadt-Extraktion: WetterBot nutzt Regex Pattern.compile("in (.+)")
+8. Regex-Matching: Matcher findet "Berlin" nach "in"
+9. Keyword-Check: Prüfung auf "wird"/"vorhersage" für Forecast-Entscheidung
+10. API-Aufruf: fetchCurrentWeatherData("Berlin") wird aufgerufen
+11. URL-Encoding: Stadt wird URL-encoded: "Berlin" → "Berlin"
+12. HTTP-Request: GET-Request an api.openweathermap.org/data/2.5/weather?q=Berlin&appid=KEY&units=metric&lang=de
+13. JSON-Response: OpenWeatherMap liefert JSON mit temp, wind, weather array
+14. GSON-Parsing: JSON wird in WeatherResponse-Objekt umgewandelt
+15. Formatierung: String.format() erstellt "In Berlin ist es aktuell:\n - Temperatur: 15°C\n..."
+16. Rückgabe-Kette: Formatierter String → WetterBot → BotManager → ChatSystem
+17. Ausgabe: Console zeigt die Wetterinformation dem Benutzer an
+
+
+Szenario 4: Nachrichtenspeicherung (Querschnittsfunktion)
+|----------------------------------------------------------------------------------------------------------------|
+| User/Bot       Console       ChatSystem         PersistenceManager         SQLite DB                           |
+|    │              │                 │                  │                       │                               |
+|    │              |                 |                  |                       |                               |
+|───────────────────────────────────────────────BENUTZEREINGABE──────────────────────────────────────────────────|
+|    │              │                 |                  |                       |                               |
+|    │─"Nachricht"─>│                 │                  │                       │                               |
+|    │              │─processInput()─>│                  │                       │                               |
+|    │              │                 │                  │                       │                               |
+|    │              │                 │─saveMessage()───>│                       │                               |
+|    │              │                 │  (User→User)     │                       │                               |
+|    │              │                 │                  │─INSERT INTO──────────>|                               |
+|    │              │                 │                  │ chat_history          │                               |
+|    │              │                 │                  │ (sender='User',       │                               |
+|    │              │                 │                  │  recipient='User',    │                               |
+|    │              │                 │                  │  content='Nachricht', │                               |
+|    │              │                 │                  │  timestamp=NOW)       │                               |
+|    │              │                 │                  │<──────OK──────────────│                               |
+|    │              │                 │<─────OK──────────│                       │                               |
+|    │              │                 │                  │                       │                               |
+|    │              │                 │                  │                       │                               |
+|────────────────────────────────────────────────────BOT-ANTWORT─────────────────────────────────────────────────|
+|    │              │                 │                  │                       │                               |
+|    │              │                 │─saveMessage()───>│                       │                               |
+|    │              │                 │  (System→User)   │                       │                               |
+|    │              │                 │                  │─INSERT INTO────────────>                              |
+|    │              │                 │                  │ chat_history          │                               |
+|    │              │                 │                  │ (sender='System',     │                               |
+|    │              │                 │                  │  recipient='User',    │                               |
+|    │              │                 │                  │  content='Antwort',   │                               |
+|    │              │                 │                  │  timestamp=NOW)       │                               |
+|    │              │                 │                  │<──────OK──────────────│                               |
+|    │              │                 │<────────OK───────│                       │                               |
+|    │              │<────"Antwort"───│                  │                       │                               |
+|    │<────Display──│                 │                  │                       │                               |
+|    │              │                 │                  │                       │                               |
+|----------------------------------------------------------------------------------------------------------------|
+
+Ablaufbeschreibung der Nachrichtenspeicherung:
+
+BENUTZEREINGABE:
+1. Eingabe erfassen: Sobald der Benutzer eine Nachricht eingibt und Enter drückt
+2. ChatMessage-Objekt erstellen
+    - Sender: currentUser.getUsername()
+    - Recipient: currentUser.getUsername() (an sich selbst)
+    - Content: Die eingegebene Nachricht
+    - Timestamp: LocalDateTime.now()
+3. SQL-Prepared Statement:
+    - INSERT INTO chat_history(sender, recipient, content, timestamp) 
+    - VALUES (?, ?, ?, ?)
+4. Parameter binden: Die Werte werden sicher über PreparedStatement eingefügt
+5. Transaktion: Commit
+
+BOT-ANTWORT:
+1. Antwort generiert: Nachdem die Verarbeitung abgeschlossen ist
+2. ChatMessage-Objekt erstellen
+    - Sender: "System" (fester String)
+    - Recipient: currentUser.getUsername()
+    - Content: Die generierte Antwort (Bot-Response oder System-Meldung)
+    - Timestamp: LocalDateTime.now()
+3. SQL-Prepared Statement:
+    - INSERT INTO chat_history(sender, recipient, content, timestamp) 
+    - VALUES (?, ?, ?, ?)
+4. Parameter binden: Die Werte werden sicher über PreparedStatement eingefügt
+5. Transaktion: Commit
+
+Integration in andere Szenarien:
+Login: Keine Speicherung der Login-Daten selbst
+Bot-Befehle: Sowohl "list bots", "activate bot" etc. als auch deren Antworten werden gespeichert
+Bot-Anfragen: "@wetterbot Berlin" und die Wetterantwort werden beide gespeichert
+Exit: Der "exit"-Befehl wird gespeichert, aber keine System-Antwort mehr
+
+Besonderheiten:
+Synchron: Speicherung erfolgt synchron vor der weiteren Verarbeitung
+Keine Batch-Operations: Jede Nachricht wird einzeln gespeichert
+Try-with-resources: Automatisches Schließen der DB-Verbindungen
+Historie-Limit: Beim Laden werden nur die letzten 100 Nachrichten abgerufen
+Chronologische Sortierung: Nachrichten werden beim Laden umgekehrt (älteste zuerst)
+
+Datenbankstruktur:
+```SQL
+CREATE TABLE IF NOT EXISTS chat_history (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    sender TEXT NOT NULL,
+    recipient TEXT NOT NULL,
+    content TEXT NOT NULL,
+    timestamp TEXT NOT NULL
+);
+```
 
 
 ## 3.6 Infrastruktursicht
