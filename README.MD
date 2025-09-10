@@ -50,7 +50,7 @@ Hauptfunktionen:
 
 Die Dokumentation gliedert sich in zwei Hauptteile:  
 
-- **Systemdokumentation (Erweiterungen)**:  
+- **Systemdokumentation**:  
   Darstellung des Basissystems, seiner Komponenten und Architektur.  
 - **Bot-Dokumentation**:  
   Eigene Kapitel für die drei implementierten Bots mit Aufbau, Schnittstellen und Laufzeitsicht.  
@@ -553,9 +553,21 @@ HIER API SPEZIFIKATION FÜR DAVID
 ##############################################################################################################################
 
 API-Spezifikation DeepL
-##############################################################################################################################
-HIER API SPEZIFIKATION FÜR YUSUF
-##############################################################################################################################
+    Translate:
+        - Endpoint: /translate
+        - Method:   POST
+        - Request:  Form-Parameter 
+                        text=<zu_übersetzender_Text>
+                        target_lang=<Zielsprache, z.B. DE, EN, FR>
+                        source_lang=<optionale_Quellsprache>
+                        formality=<optional: more|less>
+        - Auth:     Header "Authorization: DeepL-Auth-Key {API_KEY}"
+        - Response: JSON mit translations[0].text (Übersetzung) 
+                    und detected_source_language
+    Languages:
+        - Endpoint: /languages?type=target|source
+        - Method:   GET
+        - Response: JSON Liste verfügbarer Sprachen mit Codes (z.B. DE, EN)
 
 ---
 
@@ -837,8 +849,66 @@ HIER BOT DOKU FÜR WIKIBOT
 ---
 
 ## 4.3 ÜbersetzerBot
-##############################################################################################################################
-HIER BOT DOKU FÜR ÜBERSETZER
-##############################################################################################################################
+
+Kontextabgrenzung:
+
+┌──────────┐    Nachricht     ┌──────────────┐     HTTP       ┌───────────────┐
+│ Benutzer │─────────────────►│ ÜbersetzerBot│───────────────►│ DeepL API      │
+└──────────┘                  └──────────────┘                └───────────────┘
+     ▲                              │                               │
+     │                              │           JSON                │
+     └──────────────────────────────┴───────────────────────────────┘
+                      Übersetzter Text
+
+Lösungsstrategie:
+    - Pattern Matching: Regex für Erkennung von Zielsprachen ("nach EN", "ins Deutsche", "to FR")
+    - Kurzsyntax: EN->DE: Text zur direkten Quell- und Zielsprachenangabe
+    - Fehlerbehandlung: Rückmeldungen bei nicht erkannten Sprachen oder leeren Texten
+    - API-Integration: Adapter Pattern mit TranslatorApiClient (DeepL)
+
+Bausteinsicht:
+ÜbersetzerBot
+├── translatorAdapter: TranslatorApiClient  // Dependency Injection
+├── targetLangPattern: Pattern              // Regex für Sprachangabe
+├── arrowSyntaxPattern: Pattern             // Kurzsyntax EN->DE
+├── afterColonPattern: Pattern              // Text nach ":" extrahieren
+├── getBotName(): "ÜbersetzerBot"
+├── getBotDescription(): String
+└── processMessage(String): String          // Hauptlogik
+
+Laufzeitsicht:
+
+Szenario: Standardübersetzung
+    - Input: "@translatebot übersetze ins Deutsche: A bird in the hand is worth two in the bush."
+    - Regex erkennt Ziel: DE
+    - API-Call: POST /v2/translate mit target_lang=DE
+    - JSON-Parsing mit GSON
+    - Ausgabe: "Der Spatz in der Hand ist besser als die Taube auf dem Dach."
+
+Szenario: Kurzsyntax
+    - Input: "EN->FR: Good morning"
+    - Parser erkennt EN als Quell- und FR als Zielsprache
+    - API-Call mit source_lang=EN, target_lang=FR
+    - Ausgabe: "Bonjour"
+
+Schnittstellen:
+    Eingabe-Pattern:
+        @translatebot übersetze ins {SPRACHE}: {TEXT}
+        @translatebot nach {SPRACHE}: {TEXT}
+        {SRC}-> {DEST}: {TEXT}
+
+    Ausgabe-Format:
+    Übersetzung ({source_lang} → {target_lang}):
+    {translated_text}
+
+API-Integration:
+    - Endpoint: https://api-free.deepl.com/v2/translate
+    - Method: POST
+    - Parameter:
+        - text={TEXT}
+        - target_lang={LANG} (optional: source_lang)
+    - Authentifizierung: API-Key im Header (Authorization: DeepL-Auth-Key ...)
+    - Antwort: JSON → { "translations":[{"detected_source_language":"EN","text":"..."}] }
+    - Limit: 500.000 Zeichen / Monat (Free Tier)
 
 ---
